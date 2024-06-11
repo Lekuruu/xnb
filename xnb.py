@@ -72,7 +72,7 @@ class XNBReader:
     def get_images(self, format: str = 'png') -> List[bytes]:
         """Convert the raw image(s) into a readable image format"""
         if not self.textures:
-            self.logger.warning('Texture data is empty!')
+            self.logger.info('Texture data is empty.')
             return list()
 
         return [
@@ -85,7 +85,7 @@ class XNBReader:
         images = self.get_images()
 
         if len(images) <= 0:
-            self.logger.warning('No images were parsed!')
+            self.logger.info('No images were parsed.')
             return
 
         for index, image in enumerate(images):
