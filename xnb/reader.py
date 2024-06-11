@@ -52,7 +52,7 @@ class XNBReader:
             version = self.stream.s32()
 
             if not (reader := self.Readers.get(content_reader)):
-                self.logger.warning(f'Unsupported content reader: {content_reader}')
+                self.logger.warning(f'Unsupported content reader: "{content_reader}"')
                 continue
 
             if reader.Version != version:
