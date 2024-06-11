@@ -33,7 +33,9 @@ class XNBReader:
         header = self.stream.read(3)
         self.stream.pos = 0
 
-        assert header.startswith(b'XNB'), 'Invalid XNB file.'
+        if not header.startswith(b'XNB'):
+            self.logger.error('Invalid XNB header')
+            return
 
         # TODO: Additional header validation
         self.stream.skip(10)
