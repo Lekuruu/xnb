@@ -40,11 +40,13 @@ class Texture2DReader(BaseReader):
 
     def save(self, path: str, format: str = 'png') -> None:
         """Save the image data into a readable file"""
-        if len(self.content) <= 0:
+        images = self.images(format)
+
+        if len(images) <= 0:
             self.logger.info('No images were parsed.')
             return
 
-        for index, image in enumerate(self.content):
+        for index, image in enumerate(images):
             with open(f'{path}-{index}.{format.lower()}', 'wb') as f:
                 f.write(image)
 
