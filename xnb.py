@@ -76,7 +76,7 @@ class XNBReader:
             return list()
 
         return [
-            self.texture_to_image(texture, format)
+            self.texture_to_image(texture, format, index)
             for index, texture in enumerate(self.textures)
         ]
 
@@ -93,15 +93,15 @@ class XNBReader:
             with open(path, 'wb') as f:
                 f.write(image)
 
-    def texture_to_image(self, texture: bytes, format: str = 'png') -> bytes:
+    def texture_to_image(self, texture: bytes, format: str = 'png', level: int = 0) -> bytes:
         bitmap = numpy.frombuffer(texture, dtype=numpy.uint8).copy()
 
         if len(bitmap) <= 0:
             return bytes()
 
         bitmap = self.convert_brga_to_rgba(bitmap)
-        width = self.width
-        height = self.height
+        width = self.width >> level
+        height = self.height >> level
 
         if self.using_old_format:
             # Calculate width and height with each pixel having 4 bytes (RGBA)
