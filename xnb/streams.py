@@ -187,7 +187,7 @@ class StreamIn:
 
     def string(self) -> str:
         size = self.uleb128()
-        return self.read(size)
+        return self.read(size).decode()
 
     def intlist(self):
         return [self.s32() for num in range(self.s16())]
