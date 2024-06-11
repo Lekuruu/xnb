@@ -34,7 +34,8 @@ class XNBReader:
         self.stream.pos = 0
 
         if not header.startswith(b'XNB'):
-            self.logger.error('Invalid XNB header')
+            # Try to skip the header
+            self.force_texture_reader()
             return
 
         # TODO: Additional header validation
@@ -76,3 +77,17 @@ class XNBReader:
             return
 
         self.reader.save(path)
+
+    def force_texture_reader(self) -> None:
+        # In some cases, the header is not present, so
+        # we just assume its a Texture2DReader and
+        # skip the header part.
+        # This is a very hacky workaround, but it's
+        # required for some files.
+
+        try:
+            self.stream.skip(13) # Skip header
+            self.reader = Texture2DReader(self.stream)
+        except Exception as e:
+            self.logger.error('Invalid XNB file')
+            self.reader = None
