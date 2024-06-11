@@ -55,14 +55,14 @@ class XNBReader:
         self.surface_format = self.stream.s32()
         self.width = self.stream.s32()
         self.height = self.stream.s32()
-        num_sprites = self.stream.s32()
+        level_count = self.stream.s32()
 
         # Create an array to store the textures
         self.image_data = bytes()
         sprites = []
 
         # Read sprites
-        for _ in range(num_sprites):
+        for _ in range(level_count):
             sprite_size = self.stream.u32()
             spite_data = self.stream.read(sprite_size)
             sprites.append(spite_data)
