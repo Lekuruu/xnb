@@ -99,16 +99,7 @@ class XNBReader:
         if len(bitmap) <= 0:
             return bytes()
 
-        try:
-            # Convert BGRA into RGBA
-            for i in range(0, len(bitmap), 4):
-                b0 = bitmap[i]
-
-                bitmap[i] = bitmap[i + 2]
-                bitmap[i + 2] = b0
-        except IndexError as e:
-            self.logger.warning(f'Failed to convert BGRA to RGBA: {e}')
-
+        bitmap = self.convert_brga_to_rgba(bitmap)
         width = self.width
         height = self.height
 
@@ -129,3 +120,17 @@ class XNBReader:
         image = Image.fromarray(image_data.astype('uint8'))
         image.save(output, format)
         return output.getvalue()
+
+    def convert_brga_to_rgba(self, bitmap: numpy.ndarray) -> numpy.ndarray:
+        """Convert BGRA to RGBA"""
+        if self.surface_format != 1:
+            self.logger.warning(f'Texture format is not BGRA. ({self.surface_format})')
+            return bitmap
+
+        for i in range(0, len(bitmap), 4):
+            b0 = bitmap[i]
+
+            bitmap[i] = bitmap[i + 2]
+            bitmap[i + 2] = b0
+
+        return bitmap
