@@ -96,7 +96,7 @@ class XNBReader:
     def texture_to_image(self, texture: bytes, format: str = 'png') -> bytes:
         bitmap = numpy.frombuffer(texture, dtype=numpy.uint8).copy()
 
-        # Convert BGRA into RGBA (if there's any better way to do this lmk)
+        # Convert BGRA into RGBA
         for i in range(0, len(bitmap), 4):
             b0 = bitmap[i]
 
