@@ -99,11 +99,8 @@ class XNBReader:
         # Convert BGRA into RGBA (if there's any better way to do this lmk)
         for i in range(0, len(bitmap), 4):
             b0 = bitmap[i]
-            b1 = bitmap[i + 1]
-            b2 = bitmap[i + 2]
 
-            bitmap[i] = b2
-            bitmap[i + 1] = b1
+            bitmap[i] = bitmap[i + 2]
             bitmap[i + 2] = b0
             
         if len(bitmap) <= 0:
