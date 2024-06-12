@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any
+from typing import Any, List
 
 from .streams import StreamIn
 from .readers import *
@@ -22,9 +22,9 @@ class XNBReader:
     def __init__(self, data: bytes) -> None:
         self.stream = StreamIn(data)
         self.logger = logging.getLogger(__name__)
-        self.reader: BaseReader | None = None
-        self.platform = ''
-        self.version = 0
+        self.readers: List[BaseReader] = []
+        self.platform = 'w'
+        self.version = 1
         self.flags = 0
         self.deserialize()
 
@@ -35,14 +35,39 @@ class XNBReader:
             return cls(f.read())
 
     @property
-    def content(self) -> Any:
-        return (
-            self.reader.content
-            if self.reader else None
-        )
+    def contents(self) -> List[Any]:
+        return [
+            reader.content for reader in self.readers
+        ]
+
+    def save(self, path: str) -> None:
+        """Save the xnb data into readable file(s)"""
+        if not self.readers:
+            self.logger.error('No readers were found.')
+            return
+
+        for reader in self.readers:
+            reader.save(path)
 
     def deserialize(self) -> None:
         """Deserialize the xnb file"""
+        self.validate_header()
+
+        if self.readers:
+            # Texture reader was forced
+            return
+
+        reader_classes = self.read_content_manifest()
+
+        for reader in reader_classes:
+            reader_index = self.stream.uleb128()
+
+            assert reader_index > 0, 'Invalid reader index'
+            assert reader_index <= len(reader_classes), 'Invalid reader index'
+
+            self.readers.append(reader(self.stream))
+
+    def validate_header(self) -> None:
         header = self.stream.read(3)
 
         if not header.startswith(b'XNB'):
@@ -54,55 +79,42 @@ class XNBReader:
         self.version = self.stream.u8()
         self.flags = self.stream.u8()
 
-        if self.version not in self.SupportedVersions:
-            self.logger.warning(f'Invalid xnb version "{self.version}"')
-            return
+        assert self.version in self.SupportedVersions, 'Invalid xnb version'
 
         lzx_compressed = self.flags & 0x80
         lz4_compressed = self.flags & 0x40
 
-        if any([lzx_compressed, lz4_compressed]):
-            # TODO: Implement compression methods
-            self.logger.warning('Unsupported compression method')
-            return
+        # TODO: Implement compression methods
+        assert not any([lzx_compressed, lz4_compressed]), 'Unsupported compression method'
 
-        reader_size = self.stream.s32()
+        # We just ignore this and continue using the stream
+        xnb_size = self.stream.s32()
+
+    def read_content_manifest(self) -> List[BaseReader]:
+        # Each xnb file can contain multiple readers
         reader_amount = self.stream.uleb128()
-        reader_class = None
+        reader_classes = [None]*reader_amount
 
-        if reader_amount > 1:
-            # TODO: I have yet to figure out how to handle this case
-            self.logger.warning(f'Multiple content readers found, continuing anyways...')
+        assert reader_amount > 0, 'No readers found'
 
-        for _ in range(reader_amount):
-            content_reader = self.stream.string()
+        for index in range(reader_amount):
+            reader_class = self.stream.string()
             version = self.stream.s32()
 
-            if not (reader := self.Readers.get(content_reader)):
-                self.logger.warning(f'Unsupported content reader: "{content_reader}"')
-                continue
+            reader = self.Readers.get(reader_class)
+            assert reader is not None, f'Unsupported content reader: "{reader_class}"'
 
             if reader.Version != version:
                 # The version seems to be always set to 0, but we'll keep this here just in case
-                self.logger.warning(f'Unsupported reader version "{version}", continuing...')
+                self.logger.warning(f'Unsupported reader version "{version}", continuing anyways...')
 
-            reader_class = reader
+            reader_classes[index] = reader
 
-        if not reader_class:
-            return
+        # TODO: Implement shared resource fixups
+        shared_resource_fixups = self.stream.uleb128()
+        assert shared_resource_fixups == 0, 'Shared resource fixups are not supported'
 
-        self.stream.uleb128() # TODO
-        self.stream.uleb128() # TODO
-
-        self.reader = reader_class(self.stream)
-
-    def save(self, path: str) -> None:
-        """Save the xnb data into a readable file"""
-        if not self.reader:
-            self.logger.error('No reader was found.')
-            return
-
-        self.reader.save(path)
+        return reader_classes
 
     def force_texture_reader(self) -> None:
         # In some cases, the header is not present, so
@@ -111,9 +123,5 @@ class XNBReader:
         # This is a very hacky workaround, but it's
         # required for some files.
 
-        try:
-            self.stream.skip(10) # Skip header
-            self.reader = Texture2DReader(self.stream)
-        except Exception as e:
-            self.logger.error('Invalid XNB file')
-            self.reader = None
+        self.stream.skip(10) # Skip header
+        self.readers = [Texture2DReader(self.stream)]

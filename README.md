@@ -33,9 +33,10 @@ reader = XNBReader(b'...')
 # turn on logging to view the process in detail.
 logging.basicConfig(level=logging.INFO)
 
-# Access the deserialized content
-data = reader.content
+# Access the deserialized content for each reader
+for content in reader.contents:
+    print(content)
 
 # Save the xnb data into a readable file
-reader.save('./your_output.png')
+reader.save('./your_output')
 ```
