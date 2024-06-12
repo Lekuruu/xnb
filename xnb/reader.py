@@ -15,10 +15,17 @@ class XNBReader:
         # TODO: Add more readers...
     }
 
+    SupportedVersions = (
+        1, 2, 4, 5
+    )
+
     def __init__(self, data: bytes) -> None:
         self.stream = StreamIn(data)
         self.logger = logging.getLogger(__name__)
         self.reader: BaseReader | None = None
+        self.platform = ''
+        self.version = 0
+        self.flags = 0
         self.deserialize()
 
     @classmethod
@@ -37,22 +44,35 @@ class XNBReader:
     def deserialize(self) -> None:
         """Deserialize the xnb file"""
         header = self.stream.read(3)
-        self.stream.pos = 0
 
         if not header.startswith(b'XNB'):
             # Try to skip the header
             self.force_texture_reader()
             return
 
-        # TODO: Additional header validation
-        self.stream.skip(10)
+        self.platform = self.stream.char()
+        self.version = self.stream.u8()
+        self.flags = self.stream.u8()
 
+        if self.version not in self.SupportedVersions:
+            self.logger.warning(f'Invalid xnb version "{self.version}"')
+            return
+
+        lzx_compressed = self.flags & 0x80
+        lz4_compressed = self.flags & 0x40
+
+        if any([lzx_compressed, lz4_compressed]):
+            # TODO: Implement compression methods
+            self.logger.warning('Unsupported compression method')
+            return
+
+        reader_size = self.stream.s32()
         reader_amount = self.stream.uleb128()
         reader_class = None
 
         if reader_amount > 1:
             # TODO: I have yet to figure out how to handle this case
-            self.logger.warning(f'Multiple content readers found, continuing...')
+            self.logger.warning(f'Multiple content readers found, continuing anyways...')
 
         for _ in range(reader_amount):
             content_reader = self.stream.string()
@@ -92,7 +112,7 @@ class XNBReader:
         # required for some files.
 
         try:
-            self.stream.skip(13) # Skip header
+            self.stream.skip(10) # Skip header
             self.reader = Texture2DReader(self.stream)
         except Exception as e:
             self.logger.error('Invalid XNB file')
