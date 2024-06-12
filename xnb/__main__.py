@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from xnb import XNBReader
 
 def parse_args():
-    parser = ArgumentParser(description='Convert XNB files to a usable format')
+    parser = ArgumentParser('xnb', description='Convert XNB files to a usable format')
     parser.add_argument('input', help='Input file')
     parser.add_argument('output', help='Output file')
     return parser.parse_args()
