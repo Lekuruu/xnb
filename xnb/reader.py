@@ -35,10 +35,19 @@ class XNBReader:
             return cls(f.read())
 
     @property
-    def content(self) -> List[Any]:
+    def contents(self) -> List[Any]:
         return [
             reader.content for reader in self.readers
         ]
+
+    def save(self, path: str) -> None:
+        """Save the xnb data into readable file(s)"""
+        if not self.readers:
+            self.logger.error('No readers were found.')
+            return
+
+        for reader in self.readers:
+            reader.save(path)
 
     def deserialize(self) -> None:
         """Deserialize the xnb file"""
@@ -106,15 +115,6 @@ class XNBReader:
         assert shared_resource_fixups == 0, 'Shared resource fixups are not supported'
 
         return reader_classes
-
-    def save(self, path: str) -> None:
-        """Save the xnb data into readable file(s)"""
-        if not self.readers:
-            self.logger.error('No readers were found.')
-            return
-
-        for reader in self.readers:
-            reader.save(path)
 
     def force_texture_reader(self) -> None:
         # In some cases, the header is not present, so
