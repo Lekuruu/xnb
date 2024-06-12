@@ -78,7 +78,7 @@ class XNBReader:
         # TODO: Implement compression methods
         assert not any([lzx_compressed, lz4_compressed]), 'Unsupported compression method'
 
-        # We just ignore this and use the stream
+        # We just ignore this and continue using the stream
         xnb_size = self.stream.s32()
 
     def read_content_manifest(self) -> List[BaseReader]:
@@ -123,9 +123,5 @@ class XNBReader:
         # This is a very hacky workaround, but it's
         # required for some files.
 
-        try:
-            self.stream.skip(10) # Skip header
-            self.readers = [Texture2DReader(self.stream)]
-        except Exception as e:
-            self.logger.error('Invalid XNB file')
-            self.reader = None
+        self.stream.skip(10) # Skip header
+        self.readers = [Texture2DReader(self.stream)]
