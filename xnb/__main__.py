@@ -10,7 +10,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    reader = XNBReader(args.input)
+    reader = XNBReader.from_file(args.input)
     reader.save(args.output)
 
 if __name__ == '__main__':

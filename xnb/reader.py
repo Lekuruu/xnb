@@ -15,11 +15,17 @@ class XNBReader:
         # TODO: Add more readers...
     }
 
-    def __init__(self, filepath: str) -> None:
-        self.stream = StreamIn.from_file(filepath)
+    def __init__(self, data: bytes) -> None:
+        self.stream = StreamIn(data)
         self.logger = logging.getLogger(__name__)
         self.reader: BaseReader | None = None
         self.deserialize()
+
+    @classmethod
+    def from_file(cls, filepath: str) -> "XNBReader":
+        """Initialize the reader from a file path"""
+        with open(filepath, 'rb') as f:
+            return cls(f.read())
 
     @property
     def content(self) -> Any:
