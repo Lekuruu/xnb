@@ -18,10 +18,6 @@ class Texture2D:
         self.image_data: bytes = bytes()
         self.logger = logging.getLogger(__name__)
 
-    @property
-    def content(self) -> List[bytes]:
-        return self.images()
-
     def save(self, path: str, format: str = 'png') -> None:
         """Save the image data into a readable file"""
         images = self.images(format)
