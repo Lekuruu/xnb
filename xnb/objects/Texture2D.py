@@ -17,9 +17,7 @@ class Texture2D:
     surface_format: SurfaceFormat
     textures: List[bytes]
     image_data: bytes
-
-    def __init__(self) -> None:
-        self.logger = logging.getLogger(__name__)
+    logger: logging.Logger = logging.getLogger(__name__)
 
     def save(self, path: str, format: str = 'png') -> None:
         """Save the image data into a readable file"""
