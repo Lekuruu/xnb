@@ -22,7 +22,3 @@ class BaseReader:
     def deserialize(self) -> None:
         """Deserialize the xnb data"""
         ...
-
-    def save(self, path: str) -> None:
-        """Save the xnb data into a readable file"""
-        ...
