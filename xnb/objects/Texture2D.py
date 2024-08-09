@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+from dataclasses import dataclass
 from typing import List
 from PIL import Image
 
@@ -9,13 +10,15 @@ import logging
 import numpy
 import io
 
+@dataclass
 class Texture2D:
+    width: int
+    height: int
+    surface_format: SurfaceFormat
+    textures: List[bytes]
+    image_data: bytes
+
     def __init__(self) -> None:
-        self.width: int | None = None
-        self.height: int | None = None
-        self.surface_format: SurfaceFormat | None = None
-        self.textures: List[bytes] = []
-        self.image_data: bytes = bytes()
         self.logger = logging.getLogger(__name__)
 
     def save(self, path: str, format: str = 'png') -> None:
