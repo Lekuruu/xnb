@@ -9,7 +9,7 @@ from .Base import BaseReader
 
 class Texture2DReader(BaseReader):
     def __init__(self, stream: StreamIn) -> None:
-        self.texture: Texture2D | None = Texture2D()
+        self.texture: Texture2D = Texture2D()
         super().__init__(stream)
 
     @property
