@@ -47,7 +47,7 @@ class XNBReader:
             return
 
         for reader in self.readers:
-            reader.save(path)
+            reader.content.save(path)
 
     def deserialize(self) -> None:
         """Deserialize the xnb file"""
