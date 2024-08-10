@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 from PIL import Image
 
@@ -12,11 +12,11 @@ import io
 
 @dataclass
 class Texture2D:
-    width: int
-    height: int
-    surface_format: SurfaceFormat
-    textures: List[bytes]
-    image_data: bytes
+    width: int = 0
+    height: int = 0
+    surface_format: SurfaceFormat = SurfaceFormat.Bgr565
+    textures: List[bytes] = field(default_factory=list)
+    image_data: bytes = bytes()
     logger: logging.Logger = logging.getLogger(__name__)
 
     def save(self, path: str, format: str = 'png') -> None:

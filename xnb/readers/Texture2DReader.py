@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+from typing import List
 
 from ..constants import SurfaceFormat
 from ..objects import Texture2D
@@ -10,6 +11,10 @@ class Texture2DReader(BaseReader):
     def __init__(self, stream: StreamIn) -> None:
         self.texture: Texture2D | None = Texture2D()
         super().__init__(stream)
+
+    @property
+    def content(self) -> Texture2D:
+        return self.texture
 
     def deserialize(self) -> Texture2D:
         # Read texture format, width, height, and number of textures
